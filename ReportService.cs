@@ -4,11 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
+
+struct Sale
+{
+    public DateTime Date { get; set; }
+    public double Amount { get; set; }
+    public required string Currency { get; set; }
+}
+
 public class ReportService
 {
     public void CreateReportForYearAndMonth(int year, int month)
     {
-        var allSales = JsonSerializer.Deserialize<List<SaleObject>>(File.ReadAllText("sales.json"));
+        var allSales = JsonSerializer.Deserialize<List<Sale>>(File.ReadAllText("sales.json"));
         var filtered = allSales.Where(s => s.Date.Year == year && s.Date.Month == month);
         double total;
         foreach (var sale in filtered)
@@ -37,11 +45,4 @@ public class ReportService
             Console.WriteLine("Report generated successfully.");
         }
     }
-}
-
-public class SaleObject
-{
-    public DateTime Date { get; set; }
-    public double Amount { get; set; }
-    public required string Currency { get; set; }
 }
