@@ -26,7 +26,9 @@ public class ReportService
     
     public void CreateReportForYearAndMonth(int year, int month)
     {
-        var allSales = JsonSerializer.Deserialize<List<Sale>>(File.ReadAllText("sales.json"));
+        var json = File.ReadAllText("sales.json");
+        var allSales = JsonSerializer.Deserialize<List<Sale>>(json)
+                       ?? throw new InvalidOperationException("Could not read sales.json");
         var filtered = allSales.Where(s => s.Date.Year == year && s.Date.Month == month);
         var totalUsd = filtered.Sum(s => ToUsd(s.Amount, s.Currency));
 
