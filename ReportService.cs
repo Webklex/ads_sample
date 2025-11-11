@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Globalization;
 using System.Text.Json;
 
 
@@ -14,35 +15,29 @@ struct Sale
 
 public class ReportService
 {
+    private static double ToUsd(double amount, string currency) =>
+        currency.ToUpperInvariant() switch
+        {
+            "USD" => amount,
+            "EUR" => amount * 1.10,
+            "GBP" => amount * 1.30,
+            _ => throw new NotSupportedException($"Unsupported currency: {currency}")
+        };
+    
     public void CreateReportForYearAndMonth(int year, int month)
     {
         var allSales = JsonSerializer.Deserialize<List<Sale>>(File.ReadAllText("sales.json"));
         var filtered = allSales.Where(s => s.Date.Year == year && s.Date.Month == month);
-        double total;
-        foreach (var sale in filtered)
-        {
-            if (sale.Currency == "USD")
-            {
-                total = total + sale.Amount;
-            } 
-            else if (sale.Currency == "EUR")
-            {
-                total = total + sale.Amount * 1.1;
-            }
-            else if (sale.Currency == "GBP")
-            {
-                total = total + sale.Amount * 1.3;
-            }
+        var totalUsd = filtered.Sum(s => ToUsd(s.Amount, s.Currency));
 
-            var reportRows = new List<string>
-            {
-                $"Monatlicher Verkaufsbericht ({month}/{year}",
-                $"--------------------------------------------",
-                $"Gesamt Umsatz in USD: {total}"
-            };
-            
-            File.WriteAllLines($"report_{year}_{month}.txt", lines);
-            Console.WriteLine("Report generated successfully.");
-        }
+        var lines = new List<string>
+        {
+            $"Monatlicher Verkaufsbericht ({month}/{year})",
+            "--------------------------------------------",
+            $"Gesamt Umsatz in USD: {totalUsd.ToString("0.00", CultureInfo.InvariantCulture)}"
+        };
+
+        File.WriteAllLines($"report_{year}_{month}.txt", lines);
+        Console.WriteLine("Report generated successfully.");
     }
 }
