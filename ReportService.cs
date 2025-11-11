@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 
-
 struct Sale
 {
     public DateTime Date { get; set; }
